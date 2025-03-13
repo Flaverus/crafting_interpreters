@@ -1,3 +1,5 @@
+// No native enum type in JS. Make Object immutable with freeze to mock enum behaviour. Not as elegant as in Java
+
 const TokenType = Object.freeze({
   LEFT_PAREN: 'LEFT_PAREN',
   RIGHT_PAREN: 'RIGHT_PAREN',

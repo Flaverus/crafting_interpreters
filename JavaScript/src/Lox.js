@@ -3,8 +3,10 @@ import readline from 'readline';
 import createScanner from './Scanner.js';
 let hadError = false;
 
+// node src/lox.js to start
+
 const main = () => {
-  const [path] = process.argv.slice(2);
+  const [path] = process.argv.slice(2); // Get path if provided
 
   if (path) {
     // If there is a file path, run it
@@ -15,16 +17,9 @@ const main = () => {
   }
 }
 
-const run = source => {
-  const scanner = createScanner(source);
-  const tokens = scanner.scanTokens();
-
-  tokens.forEach(token => console.log(token)); // Log each token for now
-}
-
 const runFile = path => {
   try {
-    const source = fs.readFileSync(path, 'utf-8');
+    const source = fs.readFileSync(path, 'utf-8'); // Read string directly
     run(source);
 
     if (hadError) process.exit(65);
@@ -46,6 +41,13 @@ const runPrompt = () => {
     }
   });
 };
+
+const run = source => {
+  const scanner = createScanner(source); // Slight naming difference
+  const tokens = scanner.scanTokens();
+
+  tokens.forEach(token => console.log(token.toString())); // Log each token for now
+}
 
 const error = (line, message) => {
   report(line, '', message);

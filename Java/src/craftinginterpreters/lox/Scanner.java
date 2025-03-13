@@ -127,10 +127,6 @@ class Scanner {
         addToken(STRING, value);
     }
 
-    private boolean isDigit(char c) {
-        return c >= '0' && c <= '9';
-    }
-
     private void number() {
         while (isDigit(peek())) advance();
 
@@ -142,8 +138,7 @@ class Scanner {
             while (isDigit(peek())) advance();
         }
 
-        addToken(NUMBER,
-                Double.parseDouble(source.substring(start, current)));
+        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
     }
 
     private void identifier() {
@@ -156,22 +151,13 @@ class Scanner {
     }
 
     /* Helper methods */
-
-    private boolean isAtEnd() {
-        return current >= source.length();
-    }
-
-    private char advance() { // Consume and return next character from sourcefiel
-        return source.charAt(current++);
+    private void addToken(TokenType type, Object literal) {
+        String text = source.substring(start, current);
+        tokens.add(new Token(type, text, literal, line));
     }
 
     private void addToken(TokenType type) { // Create token from current lexeme
         addToken(type, null);
-    }
-
-    private void addToken(TokenType type, Object literal) {
-        String text = source.substring(start, current);
-        tokens.add(new Token(type, text, literal, line));
     }
 
     private boolean match(char expected) { // Like a conditional advance()
@@ -182,22 +168,30 @@ class Scanner {
         return true;
     }
 
+    private char advance() { // Consume and return next character from sourcefiel
+        return source.charAt(current++);
+    }
+    private boolean isAtEnd() {
+        return current >= source.length();
+    }
     private char peek() {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
-
     private char peekNext() {
         if (current + 1 >= source.length()) return '\0';
         return source.charAt(current + 1);
     }
 
+    // Character check helper
+    private boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
     private boolean isAlpha(char c) {
         return (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') ||
                 c == '_';
     }
-
     private boolean isAlphaNumeric(char c) {
         return isAlpha(c) || isDigit(c);
     }
