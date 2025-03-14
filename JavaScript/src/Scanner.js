@@ -43,21 +43,21 @@ const createScanner = source => { // Different naming to Java for better underst
   const scanToken = () => {
     const c = advance();
     switch (c) {
-      case '(': addTokenWithTypeOnly(TokenType.LEFT_PAREN); break;
-      case ')': addTokenWithTypeOnly(TokenType.RIGHT_PAREN); break;
-      case '{': addTokenWithTypeOnly(TokenType.LEFT_BRACE); break;
-      case '}': addTokenWithTypeOnly(TokenType.RIGHT_BRACE); break;
-      case ',': addTokenWithTypeOnly(TokenType.COMMA); break;
-      case '.': addTokenWithTypeOnly(TokenType.DOT); break;
-      case '-': addTokenWithTypeOnly(TokenType.MINUS); break;
-      case '+': addTokenWithTypeOnly(TokenType.PLUS); break;
-      case ';': addTokenWithTypeOnly(TokenType.SEMICOLON); break;
-      case '*': addTokenWithTypeOnly(TokenType.STAR); break;
-      case '!': addTokenWithTypeOnly(match('=') ? TokenType.BANG_EQUAL : TokenType.BANG); break;
-      case '=': addTokenWithTypeOnly(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL); break;
-      case '<': addTokenWithTypeOnly(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
-      case '>': addTokenWithTypeOnly(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
-      case '/': match('/') ? handleComment() : addTokenWithTypeOnly(TokenType.SLASH); break; // Extracted while logic to helper function to be consistent with ternary operator
+      case '(': addToken(TokenType.LEFT_PAREN); break;
+      case ')': addToken(TokenType.RIGHT_PAREN); break;
+      case '{': addToken(TokenType.LEFT_BRACE); break;
+      case '}': addToken(TokenType.RIGHT_BRACE); break;
+      case ',': addToken(TokenType.COMMA); break;
+      case '.': addToken(TokenType.DOT); break;
+      case '-': addToken(TokenType.MINUS); break;
+      case '+': addToken(TokenType.PLUS); break;
+      case ';': addToken(TokenType.SEMICOLON); break;
+      case '*': addToken(TokenType.STAR); break;
+      case '!': addToken(match('=') ? TokenType.BANG_EQUAL : TokenType.BANG); break;
+      case '=': addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL); break;
+      case '<': addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
+      case '>': addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
+      case '/': match('/') ? handleComment() : addToken(TokenType.SLASH); break; // Extracted while logic to helper function to be consistent with ternary operator
 
       case ' ': case '\r': case '\t': break; // Ignore whitespace
 
@@ -118,11 +118,6 @@ const createScanner = source => { // Different naming to Java for better underst
     tokens.push(Token(type, text, literal, line));
   };
 
-  // Overloaded version of addToken that calls the above function with a null literal as there is no overloading in JS
-  const addTokenWithTypeOnly = (type) => {
-    addToken(type, null);
-  };
-
   const match = (expected) => {
     if (isAtEnd()) return false;
     if (source.charAt(current) !== expected) return false;
@@ -143,7 +138,7 @@ const createScanner = source => { // Different naming to Java for better underst
   };
 
   // Character check helpers
-  const isDigit = (c) => c >= '0' && c <= '9';
+  const isDigit = (c) => /^[0-9]$/.test(c); // Usage of RegEx as of personal preference
   const isAlpha = (c) => /[a-zA-Z_]/.test(c); // Usage of RegEx as of personal preference
   const isAlphaNumeric = (c) => isAlpha(c) || isDigit(c);
 

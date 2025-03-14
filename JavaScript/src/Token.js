@@ -1,4 +1,4 @@
-// Token as module (factory function) as I wanted to make it more functional and JS like instead of using a class
+// Token as factory function as I wanted to make it more functional and JS like instead of using a class
 
 const Token = (type, lexeme, literal, line) => ({
   type,
