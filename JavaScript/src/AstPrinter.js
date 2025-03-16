@@ -35,7 +35,7 @@ const exampleExpr = Binary(
   Grouping(Literal(45.67))
 );
 
-console.log(AstPrinter.print(exampleExpr)); // Output: "(* (- 123) (group 45.67))"
-//node src/AstPrinter.js
+// console.log(AstPrinter.print(exampleExpr)); // Output: "(* (- 123) (group 45.67))"
+// node src/AstPrinter.js
 
 export default AstPrinter;
