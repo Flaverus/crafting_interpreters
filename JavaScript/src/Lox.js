@@ -2,10 +2,12 @@ import fs from 'fs'; // get file system
 import readline from 'readline';
 import createScanner from './Scanner.js';
 import createParser from './Parser.js';
+import createInterpreter from './Interpreter.js';
 import AstPrinter from './AstPrinter.js';
 import TokenType from './TokenType.js';
 
 let hadError = false;
+let hadRuntimeError = false;
 
 // node src/lox.js to start
 
@@ -27,6 +29,7 @@ const runFile = path => {
     run(source);
 
     if (hadError) process.exit(65);
+    if (hadRuntimeError) process.exit(70);
   } catch (err) {
     console.error("Error reading file:", err);
   }
@@ -35,7 +38,7 @@ const runFile = path => {
 const runPrompt = () => {
   const rl = readline.createInterface({
     input: process.stdin, // User input
-    output: process.stdout // Console output
+    output: null // Console output
   });
 
   rl.on('line', (line) => {
@@ -57,7 +60,8 @@ const run = source => {
   // If a syntax error occurred during parsing, stop before printing.
   if (hadError) return;
 
-  console.log(AstPrinter.print(expression));
+  const interpreter = createInterpreter();
+  interpreter.interpret(expression);
 };
 
 // A functional variant of the Java static error(Token, String) method.
@@ -78,6 +82,11 @@ const error = (tokenOrLine, message) => {
   }
 };
 
+const runtimeError = (token, message) => {
+  console.error(`${message}\n[line: ${token.line}]`);
+  hadRuntimeError = true;
+}
+
 const report = (line, where, message) => {
   console.error(`[line ${line}] Error${where}: ${message}`);
   hadError = true;
@@ -85,4 +94,4 @@ const report = (line, where, message) => {
 
 main();
 
-export { error };
+export { error, runtimeError };
