@@ -1,7 +1,7 @@
 // In JS we use factory functions that return plain objects instead of classes.
 
 export const Binary = (left, operator, right) => ({
-  // JS: Instead of inheritance, we use an object with a `type` field for pattern matching.
+  // Instead of inheritance, we use an object with a `type` field for pattern matching.
   type: "Binary",
   left,
   operator,

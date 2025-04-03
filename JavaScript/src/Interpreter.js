@@ -1,10 +1,10 @@
-import { Binary, Grouping, Literal, Unary } from './Expr.js';
 import TokenType from './TokenType.js';
 import RuntimeError from './RuntimeError.js';
 import { runtimeError } from './Lox.js'
 
-// Interpreter function that evaluates expressions
+// Interpreter factory function
 const createInterpreter = () => {
+  // Taking an AST expression and evaluating it
   const interpret = (expr) => {
     try {
       const value = evaluate(expr);
@@ -15,7 +15,8 @@ const createInterpreter = () => {
 
   };
 
-  // Visitor functions for each expression type
+  // Instead of overriding methods, we simply have an object that acts as a map of functions.
+  // A property per type that handles the accept() call from the Expression
   const interpreter = {
     Binary: (left, operator, right) => {
       const leftValue = evaluate(left);
@@ -45,7 +46,7 @@ const createInterpreter = () => {
           if (typeof leftValue === "string" && typeof rightValue === "string") {
             return leftValue + rightValue;  // Handle string concatenation
           }
-
+          // We differ here, even though it makes no difference for JS to implement this rule to Lox
           throw new RuntimeError(operator, "Operands must be two numbers or two strings.");
         case TokenType.SLASH:
           checkNumberOperands(operator, leftValue, rightValue);
@@ -79,7 +80,7 @@ const createInterpreter = () => {
 
   // Helper function to evaluate expressions
   const evaluate = (expr) => {
-    return expr.accept(interpreter);
+    return expr.accept(interpreter); // Giving interpreter Object to the accept function of the passed expression, resulting in the accept function from the visitor (interpreter Object) being called
   };
 
   const isTruthy = (object) => {
