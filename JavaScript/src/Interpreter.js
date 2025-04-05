@@ -1,18 +1,22 @@
 import TokenType from './TokenType.js';
+import createEnvironment from './Environment.js';
 import RuntimeError from './RuntimeError.js';
 import { runtimeError } from './Lox.js'
 
 // Interpreter factory function
 const createInterpreter = () => {
-  // Taking an AST expression and evaluating it
-  const interpret = (expr) => {
+
+  let environment = createEnvironment();
+
+  // Interpret the list of statements (not just a single expression)
+  const interpret = (statements) => {
     try {
-      const value = evaluate(expr);
-      console.log(stringify(value));
-    } catch (error){
+      for (let stmt of statements) {
+        execute(stmt);
+      }
+    } catch (error) {
       runtimeError(error.token, error.message);
     }
-
   };
 
   // Instead of overriding methods, we simply have an object that acts as a map of functions.
@@ -76,12 +80,68 @@ const createInterpreter = () => {
           return -rightValue;
       }
     },
+
+    Variable: (name) => {
+      return environment.get(name);
+    },
+
+    Block: (statements) => {
+      executeBlock(statements, createEnvironment(environment));
+      return null;
+    },
+
+    Expression: (expression) => {
+      evaluate(expression);
+      return null;
+    },
+
+    Print: (expression) => {
+      const value = evaluate(expression);
+      console.log(stringify(value));
+      return null;
+    },
+
+    Var: (name, initializer) => {
+      let value = null;
+      if(initializer != null) {
+        value = evaluate(initializer);
+      }
+
+      environment.define(name.lexeme, value);
+      return null;
+    },
+
+    Assign: (name, val) => {
+      const value = evaluate(val);
+      environment.assign(name, value);
+      return value;
+    }
   };
 
   // Helper function to evaluate expressions
-  const evaluate = (expr) => {
+  const evaluate = expr => {
     return expr.accept(interpreter); // Giving interpreter Object to the accept function of the passed expression, resulting in the accept function from the visitor (interpreter Object) being called
   };
+
+  const executeBlock = (statements, env) => {
+    const previous = environment;
+
+    try {
+      // Set the current environment to the provided one
+      environment = env;
+
+      for (const statement of statements) {
+        execute(statement);
+      }
+    } finally {
+      // Restore the previous environment after execution
+      environment = previous;
+    }
+  };
+
+  const execute = stmt => {
+    stmt.accept(interpreter);
+  }
 
   const isTruthy = (object) => {
     if (object === null) return false;  // null is falsy

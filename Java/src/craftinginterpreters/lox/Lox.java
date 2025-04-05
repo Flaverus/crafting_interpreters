@@ -50,12 +50,13 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        List<Stmt> statements = parser.parse();
+
 
         // Stop if there was a syntax error.
         if (hadError) return;
 
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
     }
 
     // Sepparate Code that generates the errors from the code that reports them
@@ -82,3 +83,6 @@ public class Lox {
         hadRuntimeError = true;
     }
 }
+
+// javac -d out -sourcepath src src/craftinginterpreters/lox/Lox.java  # compile
+// java -cp out craftinginterpreters.lox.Lox loxfiles/one.lox  # run the program

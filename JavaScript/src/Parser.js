@@ -1,4 +1,5 @@
-import { Binary, Grouping, Literal, Unary } from './Expr.js';
+import { Assign, Binary, Grouping, Literal, Unary, Variable } from './Expr.js';
+import { Block, Expression, Print, Var } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
 
@@ -6,17 +7,94 @@ import { error as loxError } from './Lox.js';
 const createParser = tokens => {
   let current = 0; // Pointer to current token
 
-  // Main parse function that attempts to parse an expression and returns an AST node.
+  // Main parse function
   const parse = () => {
+    const statements = [];
+    while (!isAtEnd()) {
+      statements.push(declaration());
+    }
+    return statements;
+  };
+
+  // expression --> assignment ;
+  const expression = () => assignment();
+
+  // declaration --> varDecl | statement ;
+  const declaration = () => {
     try {
-      return expression();
-    } catch (e) {
+      if (match(TokenType.VAR)) return varDeclaration();
+      return statement();
+    } catch (error) {
+      synchronize();
       return null;
     }
   };
 
-  // expression --> equality ;
-  const expression = () => equality();
+  // statement --> printStatement | expressionStatement | block ;
+  const statement = () => {
+    if (match(TokenType.PRINT)) return printStatement();
+    if (match(TokenType.LEFT_BRACE)) return Block(block());
+
+
+    return expressionStatement();
+  };
+
+  // printStatement --> "print" expression ";" ;
+  const printStatement = () => {
+    const value = expression();
+    consume(TokenType.SEMICOLON, "Expect ';' after value.");
+    return Print(value);
+  };
+
+  // varDecl --> "var" IDENTIFIER ( "=" expression )? ";" ;
+  const varDeclaration = () => {
+    const name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+    let initializer = null;
+    if (match(TokenType.EQUAL)) {
+      initializer = expression();
+    }
+
+    consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+    return Var(name, initializer);
+  };
+
+  // expressionStatement --> expression ";" ;
+  const expressionStatement = () => {
+    const expr = expression();
+    consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+    return Expression(expr);
+  };
+
+  // block --> "{" declaration* "}" ;
+  const block = () => {
+    const statements = [];
+    while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+      statements.push(declaration());
+    }
+
+    consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
+  };
+
+  // assignment --> IDENTIFIER "=" assignment | equality ;
+  const assignment = () => {
+    let expr = equality();
+
+    if (match(TokenType.EQUAL)) {
+      const equals = previous();
+      const value = assignment(); // Recursive call for the right-hand side.
+
+      if (expr.type === "Variable") {
+        const name = expr.name;
+        return Assign(name, value);
+      }
+
+      error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  };
 
   // equality --> comparison ( ( "!=" | "==" ) comparison )* ;
   const equality = () => {
@@ -81,7 +159,7 @@ const createParser = tokens => {
     return primary();
   };
 
-  // primary --> "false" | "true" | "nil" | NUMBER | STRING | "(" expression ")" ;
+  // primary --> "false" | "true" | "nil" | NUMBER | STRING | "(" expression ")" | IDENTIFIER ;
   const primary = () => {
     if (match(TokenType.FALSE)) return Literal(false);
     if (match(TokenType.TRUE)) return Literal(true);
@@ -89,6 +167,10 @@ const createParser = tokens => {
 
     if (match(TokenType.NUMBER, TokenType.STRING)) {
       return Literal(previous().literal);
+    }
+
+    if (match(TokenType.IDENTIFIER)) {
+      return Variable(previous());
     }
 
     if (match(TokenType.LEFT_PAREN)) {

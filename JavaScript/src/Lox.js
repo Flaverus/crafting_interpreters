@@ -55,13 +55,13 @@ const run = source => {
 
   // Create the parser in a functional style (using a factory function).
   const parser = createParser(tokens);
-  const expression = parser.parse();
+  const statements = parser.parse();
 
   // If a syntax error occurred during parsing, stop before printing.
   if (hadError) return;
 
   const interpreter = createInterpreter();
-  interpreter.interpret(expression);
+  interpreter.interpret(statements);
 };
 
 // A functional variant of the Java static error(Token, String) method.
@@ -83,8 +83,14 @@ const error = (tokenOrLine, message) => {
 };
 
 const runtimeError = (token, message) => {
-  console.error(`${message}\n[line: ${token.line}]`);
-  hadRuntimeError = true;
+  //console.error(`${message}\n[line: ${token.line}]`);
+  //hadRuntimeError = true;
+    if (token && token.line !== undefined) {
+      console.error(`${message}\n[line: ${token.line}]`);
+    } else {
+      console.error(`${message}\n[line: unknown]\ntoken: ${token}`);
+    }
+    hadRuntimeError = true;
 }
 
 const report = (line, where, message) => {

@@ -1,5 +1,12 @@
 // In JS we use factory functions that return plain objects instead of classes.
 
+export const Assign = (name, value) => ({
+  type: "Assign",
+  name,
+  value,
+  accept: (visitor) => visitor.Assign(name, value)
+})
+
 export const Binary = (left, operator, right) => ({
   // Instead of inheritance, we use an object with a `type` field for pattern matching.
   type: "Binary",
@@ -26,4 +33,10 @@ export const Unary = (operator, right) => ({
   operator,
   right,
   accept: (visitor) => visitor.Unary(operator, right),
+});
+
+export const Variable = (name) => ({
+  type: "Variable",
+  name,
+  accept: (visitor) => visitor.Variable(name),
 });
