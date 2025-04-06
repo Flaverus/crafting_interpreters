@@ -1,5 +1,5 @@
-import { Assign, Binary, Grouping, Literal, Unary, Variable } from './Expr.js';
-import { Block, Expression, Print, Var } from './Stmt.js'
+import { Assign, Binary, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
+import { Block, Expression, If, Print, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
 
@@ -30,14 +30,77 @@ const createParser = tokens => {
     }
   };
 
-  // statement --> printStatement | expressionStatement | block ;
+  // statement --> expressionStatement | forStatement | ifStatement | printStatement | whileStatement | block ;
   const statement = () => {
+    if (match(TokenType.FOR)) return forStatement();
+    if (match(TokenType.IF)) return ifStatement();
     if (match(TokenType.PRINT)) return printStatement();
+    if (match(TokenType.WHILE)) return whileStatement();
     if (match(TokenType.LEFT_BRACE)) return Block(block());
-
 
     return expressionStatement();
   };
+
+  // forStatement --> "for" "(" ( varDeclaration | expressionStatement | ";" ) expression? ";" expression? ")" statement ;
+  const forStatement = () => {
+    consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+
+    let initializer;
+    if (match(TokenType.SEMICOLON)) {
+      initializer = null;
+    } else if (match(TokenType.VAR)) {
+      initializer = varDeclaration();
+    } else {
+      initializer = expressionStatement();
+    }
+
+    let condition = null;
+    if (!check(TokenType.SEMICOLON)) {
+      condition = expression();
+    }
+    consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+
+    let increment = null;
+    if (!check(TokenType.RIGHT_PAREN)) {
+      increment = expression();
+    }
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.");
+
+    let body = statement();
+
+    //
+    if (increment !== null) {
+      body = Block([
+        body,
+        Expression(increment),
+      ]);
+    }
+
+    if (condition === null) {
+      condition = Literal(true);
+    }
+    body = While(condition, body);
+
+    if (initializer !== null) {
+      body = Block([initializer, body]);
+    }
+    //
+
+    return body;
+  };
+
+  // ifStatement --> "if" "(" expression ")" statement ( "else" statement )? ;
+  const ifStatement = () => {
+    consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+    const condition = expression();
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
+
+    const thenBranch = statement();
+    let elseBranch = null;
+    if (match(TokenType.ELSE)) {
+      elseBranch = statement();
+    }
+  }
 
   // printStatement --> "print" expression ";" ;
   const printStatement = () => {
@@ -46,7 +109,7 @@ const createParser = tokens => {
     return Print(value);
   };
 
-  // varDecl --> "var" IDENTIFIER ( "=" expression )? ";" ;
+  // varDeclaration --> "var" IDENTIFIER ( "=" expression )? ";" ;
   const varDeclaration = () => {
     const name = consume(TokenType.IDENTIFIER, "Expect variable name.");
 
@@ -57,6 +120,16 @@ const createParser = tokens => {
 
     consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
     return Var(name, initializer);
+  };
+
+  // whileStatement --> "while" "(" expression ")" statement ;
+  const whileStatement = () => {
+    consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+    const condition = expression();
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+    const body = statement();
+
+    return While(condition, body);
   };
 
   // expressionStatement --> expression ";" ;
@@ -77,9 +150,9 @@ const createParser = tokens => {
     return statements;
   };
 
-  // assignment --> IDENTIFIER "=" assignment | equality ;
+  // assignment --> IDENTIFIER "=" assignment | logic_or ;
   const assignment = () => {
-    let expr = equality();
+    let expr = or();
 
     if (match(TokenType.EQUAL)) {
       const equals = previous();
@@ -91,6 +164,32 @@ const createParser = tokens => {
       }
 
       error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  };
+
+  // logic_or --> logic_and ( "or" logic_and )* ;
+  const or = () => {
+    let expr = and();
+
+    while (match(TokenType.OR)) {
+      const operator = previous();
+      const right = and();
+      expr = Logical(expr, operator, right);
+    }
+
+    return expr;
+  };
+
+  // logic_and --> equality ( "and" equality )* ;
+  const and = () => {
+    let expr = equality();
+
+    while (match(TokenType.AND)) {
+      const operator = previous();
+      const right = equality();
+      expr = Logical(expr, operator, right);
     }
 
     return expr;

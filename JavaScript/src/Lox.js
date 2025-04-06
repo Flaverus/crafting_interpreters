@@ -38,7 +38,7 @@ const runFile = path => {
 const runPrompt = () => {
   const rl = readline.createInterface({
     input: process.stdin, // User input
-    output: null // Console output
+    output: process.stdout // Console output
   });
 
   rl.on('line', (line) => {

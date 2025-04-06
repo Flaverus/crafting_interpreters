@@ -28,6 +28,14 @@ export const Literal = (value) => ({
   accept: (visitor) => visitor.Literal(value),
 });
 
+export const Logical = (left, operator, right) => ({
+  type: "Logical",
+  left,
+  operator,
+  right,
+  accept: (visitor) => visitor.Logical(left, operator, right),
+});
+
 export const Unary = (operator, right) => ({
   type: "Unary",
   operator,

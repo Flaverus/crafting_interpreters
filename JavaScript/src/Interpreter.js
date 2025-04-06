@@ -69,6 +69,18 @@ const createInterpreter = () => {
 
     Literal: (value) => value,
 
+    Logical: (lft, operator, right) => {
+      const left = evaluate(lft);
+
+      if (operator.type == TokenType.OR) { //??
+        if (isTruthy(left)) return left;
+      } else {
+        if (!isTruthy(left)) return left;
+      }
+
+      return evaluate(right);
+    },
+
     Unary: (operator, right) => {
       const rightValue = evaluate(right);
 
@@ -95,6 +107,15 @@ const createInterpreter = () => {
       return null;
     },
 
+    If: (condition, thenBranch, elseBranch) => {
+      if (isTruthy(evaluate(condition))) {
+        execute(thenBranch);
+      } else if (elseBranch != null) {
+        execute(elseBranch);
+      }
+      return null;
+    },
+
     Print: (expression) => {
       const value = evaluate(expression);
       console.log(stringify(value));
@@ -108,6 +129,13 @@ const createInterpreter = () => {
       }
 
       environment.define(name.lexeme, value);
+      return null;
+    },
+
+    While: (condition, body) => {
+      while (isTruthy(evaluate(condition))) {
+        execute(body);
+      }
       return null;
     },
 
