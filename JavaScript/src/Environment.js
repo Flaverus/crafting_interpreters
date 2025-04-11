@@ -9,7 +9,7 @@ const createEnvironment = (enclosing = null) => {
     }
 
     if (enclosing) return enclosing.get(name);
-    console.log(enclosing);
+
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
   };
 
