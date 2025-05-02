@@ -21,7 +21,6 @@ const createParser = tokens => {
 
   // func --> IDENTIFIER "(" parameters? ")" block ;
   const func = (kind) => {
-      console.log('goes function');
     const name = consume(TokenType.IDENTIFIER, `Expect ${kind} name.`);
 
     consume(TokenType.LEFT_PAREN, `Expect '(' after ${kind} name.`);
@@ -40,21 +39,16 @@ const createParser = tokens => {
     consume(TokenType.LEFT_BRACE, `Expect '{' before ${kind} body.`);
     const body = block();
 
-    console.log("Parser Body !!!!!!!!!");
-    console.log(body);
     return Function(name, parameters, body);
   }
 
   // declaration --> funDecl | varDecl | statement ;
   const declaration = () => {
-      console.log(peek());
     try {
       if (match(TokenType.FUN)) return func("function");
       if (match(TokenType.VAR)) return varDeclaration();
       return statement();
     } catch (error) {
-        console.log(peek());
-        console.log("Error ????????????????")
       synchronize();
       return null;
     }
@@ -62,7 +56,6 @@ const createParser = tokens => {
 
   // statement --> expressionStatement | forStatement | ifStatement | printStatement | returnStatement | whileStatement | block ;
   const statement = () => {
-      console.log('goes statement');
     if (match(TokenType.FOR)) return forStatement();
     if (match(TokenType.IF)) return ifStatement();
     if (match(TokenType.PRINT)) return printStatement();
@@ -145,19 +138,21 @@ const createParser = tokens => {
 
   const returnStatement = () => {
     const keyword = previous();
-    const value = null;
+    let value = null;
 
     if (!check(TokenType.SEMICOLON)) {
       value = expression();
     }
 
     consume(TokenType.SEMICOLON, "Expect ';' after return value.");
-    return Return(keyword, value);
+
+    const test = Return(keyword, value);
+
+    return test;
   }
 
   // varDeclaration --> "var" IDENTIFIER ( "=" expression )? ";" ;
   const varDeclaration = () => {
-      console.log('goes var');
     const name = consume(TokenType.IDENTIFIER, "Expect variable name.");
 
     let initializer = null;

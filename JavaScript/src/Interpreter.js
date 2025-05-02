@@ -139,8 +139,6 @@ const createInterpreter = () => {
 
     Function: (name, params, body) => {
 
-        console.log("Body in visitor");
-        console.log(body);
       const func = createLoxFunction(name, params, body);
       environment.define(name.lexeme, func);
       return null;
@@ -165,13 +163,7 @@ const createInterpreter = () => {
     Return: (keyword, val) => {
       let value = null;
 
-      console.log("INSIDE RETURN");
-
-
       if(val != null) value = evaluate(val);
-
-      console.log("INSIDE RETURN");
-      console.log(value);
 
       throw new Return(value);
     },
@@ -207,10 +199,6 @@ const createInterpreter = () => {
 
   const executeBlock = (statements, env) => {
     const previous = environment;
-
-    console.log('executeBlock');
-    console.log(statements);
-    console.log(env);
 
     try {
       // Set the current environment to the provided one
