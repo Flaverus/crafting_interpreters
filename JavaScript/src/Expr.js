@@ -16,6 +16,14 @@ export const Binary = (left, operator, right) => ({
   accept: (visitor) => visitor.Binary(left, operator, right),   // We use a function that directly calls the appropriate visitor method.
 });
 
+export const Call = (callee, paren, args) => ({
+  type: "Call",
+  callee,
+  paren,
+  args,
+  accept: (visitor) => visitor.Call(callee, paren, args),
+});
+
 export const Grouping = (expression) => ({
   type: "Grouping",
   expression,

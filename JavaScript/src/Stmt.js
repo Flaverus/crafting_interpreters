@@ -10,6 +10,14 @@ export const Expression = (expression) => ({
   accept: (visitor) => visitor.Expression(expression),
 });
 
+export const Function = (name, params, body) => ({
+  type: "Function",
+  name,
+  params,
+  body,
+  accept: (visitor) => visitor.Function(name, params, body), //? name space?
+});
+
 export const If = (condition, thenBranch, elseBranch) => ({
   type: "If",
   condition,

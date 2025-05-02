@@ -1,4 +1,6 @@
 import TokenType from './TokenType.js';
+import { createLoxCallable } from './LoxCallable.js';
+import createLoxFunction from './LoxFunction.js'
 import createEnvironment from './Environment.js';
 import RuntimeError from './RuntimeError.js';
 import { runtimeError } from './Lox.js'
@@ -6,7 +8,18 @@ import { runtimeError } from './Lox.js'
 // Interpreter factory function
 const createInterpreter = () => {
 
-  let environment = createEnvironment();
+  const globals = createEnvironment();
+  let environment = globals;
+
+  // Define the 'clock' native function in the globals environment using LoxCallable
+  globals.define("clock", createLoxCallable(
+    0,  // Arity: clock takes 0 arguments
+    (interpreter, args) => { // Args needed?
+      return Date.now() / 1000;  // Return time in seconds
+    },
+    () => "<native fn>",  // String representation of the function
+  ));
+
 
   // Interpret the list of statements (not just a single expression)
   const interpret = (statements) => {
@@ -48,7 +61,7 @@ const createInterpreter = () => {
           }
 
           if (typeof leftValue === "string" && typeof rightValue === "string") {
-            return leftValue + rightValue;  // Handle string concatenation
+            return leftValue + rightValue;  // Handle string concatenation ???????Literal()????????
           }
           // We differ here, even though it makes no difference for JS to implement this rule to Lox
           throw new RuntimeError(operator, "Operands must be two numbers or two strings.");
@@ -63,6 +76,22 @@ const createInterpreter = () => {
         case TokenType.EQUAL_EQUAL:
           return leftValue === rightValue;
       }
+    },
+
+    Call: (cle, paren, args) => { // ERROR here???
+      const callee = evaluate(cle);
+
+      const argVals = args.map(arg => evaluate(arg)); //?
+
+      if (typeof callee.call !== 'function') { //?
+        throw new RuntimeError(paren, "Can only call functions and classes.");
+      }
+
+      if (typeof callee.arity === 'function' && argVals.length !== callee.arity()) {
+        throw new RuntimeError(paren, `Expected ${callee.arity()} arguments but got ${argVals.length}.`);
+      }
+
+      return callee.call(globals, executeBlock, argVals); // Different as I can not send this..?
     },
 
     Grouping: (expression) => evaluate(expression),
@@ -107,6 +136,12 @@ const createInterpreter = () => {
       return null;
     },
 
+    Function: (name, params, body) => {
+      const func = createLoxFunction(name, params, body);
+      environment.define(name.lexeme, func);
+      return null;
+    },
+
     If: (condition, thenBranch, elseBranch) => {
       if (isTruthy(evaluate(condition))) {
         execute(thenBranch);
@@ -118,6 +153,7 @@ const createInterpreter = () => {
 
     Print: (expression) => {
       const value = evaluate(expression);
+
       console.log(stringify(value));
       return null;
     },
@@ -210,7 +246,7 @@ const createInterpreter = () => {
     return object.toString();  // Default case, convert to string
   };
 
-  return { interpret };
+  return { interpret, globals, executeBlock };
 };
 
 export default createInterpreter;

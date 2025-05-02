@@ -1,5 +1,5 @@
-import { Assign, Binary, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
-import { Block, Expression, If, Print, Var, While } from './Stmt.js'
+import { Assign, Binary, Call, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
+import { Block, Expression, Function, If, Print, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
 
@@ -19,9 +19,32 @@ const createParser = tokens => {
   // expression --> assignment ;
   const expression = () => assignment();
 
-  // declaration --> varDecl | statement ;
+  // func --> IDENTIFIER "(" parameters? ")" block ;
+  const func = (kind) => {
+    const name = consume(TokenType.IDENTIFIER, `Expect ${kind} name.`);
+
+    consume(TokenType.LEFT_PAREN, `Expect '(' after ${kind} name.`);
+    const parameters = [];
+    if (!check(TokenType.RIGHT_PAREN)) {
+      do {
+        if (parameters.length >= 255) {
+          error(peek(), "Can't have more than 255 parameters.");
+        }
+        parameters.push(consume(TokenType.IDENTIFIER, "Expect parameter name."));
+
+      } while (match(TokenType.COMMA));
+    }
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+
+    consume(TokenType.LEFT_BRACE, `Expect '{' before ${kind} body.`);
+    const body = block();
+    return Function(name, parameters, body);
+  }
+
+  // declaration --> funDecl | varDecl | statement ;
   const declaration = () => {
     try {
+      if (match(TokenType.FUN)) return func("function");
       if (match(TokenType.VAR)) return varDeclaration();
       return statement();
     } catch (error) {
@@ -100,6 +123,8 @@ const createParser = tokens => {
     if (match(TokenType.ELSE)) {
       elseBranch = statement();
     }
+
+    return If(condition, thenBranch, elseBranch);
   }
 
   // printStatement --> "print" expression ";" ;
@@ -145,7 +170,6 @@ const createParser = tokens => {
     while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
       statements.push(declaration());
     }
-
     consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
     return statements;
   };
@@ -247,7 +271,7 @@ const createParser = tokens => {
     return expr;
   };
 
-  // unary --> ( "!" | "-" ) unary | primary ;
+  // unary --> ( "!" | "-" ) unary | call ;
   const unary = () => {
     if (match(TokenType.BANG, TokenType.MINUS)) {
       const operator = previous();
@@ -255,8 +279,40 @@ const createParser = tokens => {
       return Unary(operator, right);
     }
 
-    return primary();
+    return call();
   };
+
+  const finishCall = callee => {
+    let args = [];
+      if (!check(TokenType.RIGHT_PAREN)) {
+        do {
+          if (args.length >= 255) {
+            error(peek(), "Can't have more than 255 arguments."); //?
+          }
+          args.push(expression());
+
+        } while (match(TokenType.COMMA));
+      }
+
+      const paren = consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.");
+
+      return Call(callee, paren, args);
+  }
+
+  // call --> primary ( "(" arguments? ")" )* ;
+  const call = () => {
+    let expr = primary();
+
+    while (true) {
+      if (match(TokenType.LEFT_PAREN)) {
+        expr = finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
 
   // primary --> "false" | "true" | "nil" | NUMBER | STRING | "(" expression ")" | IDENTIFIER ;
   const primary = () => {
