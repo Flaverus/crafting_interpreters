@@ -3,6 +3,7 @@ import { createLoxCallable } from './LoxCallable.js';
 import createLoxFunction from './LoxFunction.js'
 import createEnvironment from './Environment.js';
 import RuntimeError from './RuntimeError.js';
+import Return from './Return.js';
 import { runtimeError } from './Lox.js'
 
 // Interpreter factory function
@@ -61,7 +62,7 @@ const createInterpreter = () => {
           }
 
           if (typeof leftValue === "string" && typeof rightValue === "string") {
-            return leftValue + rightValue;  // Handle string concatenation ???????Literal()????????
+            return leftValue + rightValue;  // Handle string concatenation
           }
           // We differ here, even though it makes no difference for JS to implement this rule to Lox
           throw new RuntimeError(operator, "Operands must be two numbers or two strings.");
@@ -137,6 +138,9 @@ const createInterpreter = () => {
     },
 
     Function: (name, params, body) => {
+
+        console.log("Body in visitor");
+        console.log(body);
       const func = createLoxFunction(name, params, body);
       environment.define(name.lexeme, func);
       return null;
@@ -156,6 +160,20 @@ const createInterpreter = () => {
 
       console.log(stringify(value));
       return null;
+    },
+
+    Return: (keyword, val) => {
+      let value = null;
+
+      console.log("INSIDE RETURN");
+
+
+      if(val != null) value = evaluate(val);
+
+      console.log("INSIDE RETURN");
+      console.log(value);
+
+      throw new Return(value);
     },
 
     Var: (name, initializer) => {
@@ -189,6 +207,10 @@ const createInterpreter = () => {
 
   const executeBlock = (statements, env) => {
     const previous = environment;
+
+    console.log('executeBlock');
+    console.log(statements);
+    console.log(env);
 
     try {
       // Set the current environment to the provided one

@@ -1,5 +1,5 @@
 import { Assign, Binary, Call, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
-import { Block, Expression, Function, If, Print, Var, While } from './Stmt.js'
+import { Block, Expression, Function, If, Print, Return, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
 
@@ -21,6 +21,7 @@ const createParser = tokens => {
 
   // func --> IDENTIFIER "(" parameters? ")" block ;
   const func = (kind) => {
+      console.log('goes function');
     const name = consume(TokenType.IDENTIFIER, `Expect ${kind} name.`);
 
     consume(TokenType.LEFT_PAREN, `Expect '(' after ${kind} name.`);
@@ -38,26 +39,34 @@ const createParser = tokens => {
 
     consume(TokenType.LEFT_BRACE, `Expect '{' before ${kind} body.`);
     const body = block();
+
+    console.log("Parser Body !!!!!!!!!");
+    console.log(body);
     return Function(name, parameters, body);
   }
 
   // declaration --> funDecl | varDecl | statement ;
   const declaration = () => {
+      console.log(peek());
     try {
       if (match(TokenType.FUN)) return func("function");
       if (match(TokenType.VAR)) return varDeclaration();
       return statement();
     } catch (error) {
+        console.log(peek());
+        console.log("Error ????????????????")
       synchronize();
       return null;
     }
   };
 
-  // statement --> expressionStatement | forStatement | ifStatement | printStatement | whileStatement | block ;
+  // statement --> expressionStatement | forStatement | ifStatement | printStatement | returnStatement | whileStatement | block ;
   const statement = () => {
+      console.log('goes statement');
     if (match(TokenType.FOR)) return forStatement();
     if (match(TokenType.IF)) return ifStatement();
     if (match(TokenType.PRINT)) return printStatement();
+    if (match(TokenType.RETURN)) return returnStatement();
     if (match(TokenType.WHILE)) return whileStatement();
     if (match(TokenType.LEFT_BRACE)) return Block(block());
 
@@ -134,8 +143,21 @@ const createParser = tokens => {
     return Print(value);
   };
 
+  const returnStatement = () => {
+    const keyword = previous();
+    const value = null;
+
+    if (!check(TokenType.SEMICOLON)) {
+      value = expression();
+    }
+
+    consume(TokenType.SEMICOLON, "Expect ';' after return value.");
+    return Return(keyword, value);
+  }
+
   // varDeclaration --> "var" IDENTIFIER ( "=" expression )? ";" ;
   const varDeclaration = () => {
+      console.log('goes var');
     const name = consume(TokenType.IDENTIFIER, "Expect variable name.");
 
     let initializer = null;
@@ -173,6 +195,7 @@ const createParser = tokens => {
     consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
     return statements;
   };
+  //error here!!!
 
   // assignment --> IDENTIFIER "=" assignment | logic_or ;
   const assignment = () => {

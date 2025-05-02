@@ -32,6 +32,13 @@ export const Print = (expression) => ({
   accept: (visitor) => visitor.Print(expression),
 });
 
+export const Return = (keyword, value) => ({
+  type: "Return",
+  keyword,
+  value,
+  accept: (visitor) => visitor.Return(keyword, value),
+});
+
 export const Var = (name, initializer) => ({
   type: "Var",
   name,

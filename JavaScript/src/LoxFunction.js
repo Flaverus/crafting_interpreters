@@ -2,6 +2,9 @@ import { createLoxCallable } from './LoxCallable.js';
 import createEnvironment from './Environment.js';
 
 const createLoxFunction = (name, params, body) => {
+
+    console.log("========= LOX FUNCTION BODY LOG");
+    console.log(body);
   return createLoxCallable(
     // arity function
     () => params.length,
@@ -13,8 +16,15 @@ const createLoxFunction = (name, params, body) => {
       for (let i = 0; i < params.length; i++) {
         environment.define(params[i].lexeme, args[i]);
       }
+          console.log(environment);
 
-      executeBlock(body, environment);
+      try {
+          console.log(environment);
+        executeBlock(body, environment);
+      } catch (returnValue) {
+          console.log('CATCHHHHH!!!!!!');
+        return returnValue.value;
+      }
       return null;
     },
 
