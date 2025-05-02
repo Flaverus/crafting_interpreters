@@ -1,16 +1,16 @@
 import { createLoxCallable } from './LoxCallable.js';
 import createEnvironment from './Environment.js';
 
-const createLoxFunction = (name, params, body) => {
+const createLoxFunction = (name, params, body, closure) => {
 
   return createLoxCallable(
     // arity function
     () => params.length,
 
     // call function
-    (globals, executeBlock, args) => { // Different! Not getting Interpreter but globals and execute block!!!
+    (executeBlock, args) => { // Different! Not getting Interpreter but globals and execute block!!!
 
-      const environment = createEnvironment(globals);
+      const environment = createEnvironment(closure);
       for (let i = 0; i < params.length; i++) {
         environment.define(params[i].lexeme, args[i]);
       }

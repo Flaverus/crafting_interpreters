@@ -92,7 +92,7 @@ const createInterpreter = () => {
         throw new RuntimeError(paren, `Expected ${callee.arity()} arguments but got ${argVals.length}.`);
       }
 
-      return callee.call(globals, executeBlock, argVals); // Different as I can not send this..?
+      return callee.call(executeBlock, argVals); // Different as I can not send this..?
     },
 
     Grouping: (expression) => evaluate(expression),
@@ -139,7 +139,7 @@ const createInterpreter = () => {
 
     Function: (name, params, body) => {
 
-      const func = createLoxFunction(name, params, body);
+      const func = createLoxFunction(name, params, body, environment);
       environment.define(name.lexeme, func);
       return null;
     },
