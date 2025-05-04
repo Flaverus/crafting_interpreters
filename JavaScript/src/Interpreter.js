@@ -10,6 +10,7 @@ import { runtimeError } from './Lox.js'
 const createInterpreter = () => {
 
   const globals = createEnvironment();
+  const locals = new Map();
   let environment = globals;
 
   // Define the 'clock' native function in the globals environment using LoxCallable
@@ -124,7 +125,7 @@ const createInterpreter = () => {
     },
 
     Variable: (name) => {
-      return environment.get(name);
+      return lookUpVariable(name, { type: "Variable", name });
     },
 
     Block: (statements) => {
@@ -187,7 +188,14 @@ const createInterpreter = () => {
 
     Assign: (name, val) => {
       const value = evaluate(val);
-      environment.assign(name, value);
+
+      const distance = locals.get(expr);
+      if (distance !== undefined) {
+        environment.assignAt(name, distance, value);
+      } else {
+        globals.assign(name, value);
+      }
+
       return value;
     }
   };
@@ -195,6 +203,19 @@ const createInterpreter = () => {
   // Helper function to evaluate expressions
   const evaluate = expr => {
     return expr.accept(interpreter); // Giving interpreter Object to the accept function of the passed expression, resulting in the accept function from the visitor (interpreter Object) being called
+  };
+
+  const resolve = (expr, depth) => {
+    locals.set(expr, depth);
+  };
+
+  const lookUpVariable = (name, expr) => {
+    const distance = locals.get(expr);
+    if (distance !== undefined) {
+      return environment.getAt(name, distance);
+    } else {
+      return globals.get(name);
+    }
   };
 
   const executeBlock = (statements, env) => {
@@ -256,7 +277,7 @@ const createInterpreter = () => {
     return object.toString();  // Default case, convert to string
   };
 
-  return { interpret, globals, executeBlock };
+  return { interpret, globals, executeBlock, resolve };
 };
 
 export default createInterpreter;
