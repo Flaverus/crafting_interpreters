@@ -210,6 +210,7 @@ const createInterpreter = () => {
   };
 
   const lookUpVariable = (name, expr) => {
+      //@TODO --> Problem lies here. I'm not getting distance as I'm not working with the expr object...
     const distance = locals.get(expr);
     if (distance !== undefined) {
       return environment.getAt(name, distance);
