@@ -3,6 +3,7 @@ import readline from 'readline';
 import createScanner from './Scanner.js';
 import createParser from './Parser.js';
 import createInterpreter from './Interpreter.js';
+import createResolver from './Resolver.js';
 import AstPrinter from './AstPrinter.js';
 import TokenType from './TokenType.js';
 
@@ -61,6 +62,12 @@ const run = source => {
   if (hadError) return;
 
   const interpreter = createInterpreter();
+
+  const resolver = createResolver(interpreter);
+  resolver.resolve(statements);
+
+  if (hadError) return;
+
   interpreter.interpret(statements);
 };
 

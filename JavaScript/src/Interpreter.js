@@ -3,12 +3,14 @@ import { createLoxCallable } from './LoxCallable.js';
 import createLoxFunction from './LoxFunction.js'
 import createEnvironment from './Environment.js';
 import RuntimeError from './RuntimeError.js';
+import Return from './Return.js';
 import { runtimeError } from './Lox.js'
 
 // Interpreter factory function
 const createInterpreter = () => {
 
   const globals = createEnvironment();
+  const locals = new Map();
   let environment = globals;
 
   // Define the 'clock' native function in the globals environment using LoxCallable
@@ -61,7 +63,7 @@ const createInterpreter = () => {
           }
 
           if (typeof leftValue === "string" && typeof rightValue === "string") {
-            return leftValue + rightValue;  // Handle string concatenation ???????Literal()????????
+            return leftValue + rightValue;  // Handle string concatenation
           }
           // We differ here, even though it makes no difference for JS to implement this rule to Lox
           throw new RuntimeError(operator, "Operands must be two numbers or two strings.");
@@ -91,7 +93,7 @@ const createInterpreter = () => {
         throw new RuntimeError(paren, `Expected ${callee.arity()} arguments but got ${argVals.length}.`);
       }
 
-      return callee.call(globals, executeBlock, argVals); // Different as I can not send this..?
+      return callee.call(executeBlock, argVals); // Different as I can not send this..?
     },
 
     Grouping: (expression) => evaluate(expression),
@@ -122,8 +124,8 @@ const createInterpreter = () => {
       }
     },
 
-    Variable: (name) => {
-      return environment.get(name);
+    Variable: (name, nodeId) => {
+      return lookUpVariable(name, nodeId);
     },
 
     Block: (statements) => {
@@ -137,7 +139,8 @@ const createInterpreter = () => {
     },
 
     Function: (name, params, body) => {
-      const func = createLoxFunction(name, params, body);
+
+      const func = createLoxFunction(name, params, body, environment);
       environment.define(name.lexeme, func);
       return null;
     },
@@ -158,6 +161,14 @@ const createInterpreter = () => {
       return null;
     },
 
+    Return: (keyword, val) => {
+      let value = null;
+
+      if(val != null) value = evaluate(val);
+
+      throw new Return(value);
+    },
+
     Var: (name, initializer) => {
       let value = null;
       if(initializer != null) {
@@ -175,9 +186,16 @@ const createInterpreter = () => {
       return null;
     },
 
-    Assign: (name, val) => {
+    Assign: (name, val, nodeId) => {
       const value = evaluate(val);
-      environment.assign(name, value);
+
+      const distance = locals.get(nodeId); //@TODO not working like that...
+      if (distance !== undefined) {
+        environment.assignAt(name, distance, value);
+      } else {
+        globals.assign(name, value);
+      }
+
       return value;
     }
   };
@@ -185,6 +203,20 @@ const createInterpreter = () => {
   // Helper function to evaluate expressions
   const evaluate = expr => {
     return expr.accept(interpreter); // Giving interpreter Object to the accept function of the passed expression, resulting in the accept function from the visitor (interpreter Object) being called
+  };
+
+  const resolve = (_uniqueId, depth) => {
+    locals.set(_uniqueId, depth);
+  };
+
+  const lookUpVariable = (name, nodeId) => {
+      //@TODO --> Problem lies here. I'm not getting distance as I'm not working with the expr object...
+    const distance = locals.get(nodeId);
+    if (distance !== undefined) {
+      return environment.getAt(name, distance);
+    } else {
+      return globals.get(name);
+    }
   };
 
   const executeBlock = (statements, env) => {
@@ -246,7 +278,7 @@ const createInterpreter = () => {
     return object.toString();  // Default case, convert to string
   };
 
-  return { interpret, globals, executeBlock };
+  return { interpret, globals, executeBlock, resolve };
 };
 
 export default createInterpreter;

@@ -1,11 +1,12 @@
 import { Assign, Binary, Call, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
-import { Block, Expression, Function, If, Print, Var, While } from './Stmt.js'
+import { Block, Expression, Function, If, Print, Return, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
 
 // Factory function that creates a parser instance with functional style. Again slight naming difference
 const createParser = tokens => {
   let current = 0; // Pointer to current token
+  let nextNodeId = 0; //
 
   // Main parse function
   const parse = () => {
@@ -38,6 +39,7 @@ const createParser = tokens => {
 
     consume(TokenType.LEFT_BRACE, `Expect '{' before ${kind} body.`);
     const body = block();
+
     return Function(name, parameters, body);
   }
 
@@ -53,11 +55,12 @@ const createParser = tokens => {
     }
   };
 
-  // statement --> expressionStatement | forStatement | ifStatement | printStatement | whileStatement | block ;
+  // statement --> expressionStatement | forStatement | ifStatement | printStatement | returnStatement | whileStatement | block ;
   const statement = () => {
     if (match(TokenType.FOR)) return forStatement();
     if (match(TokenType.IF)) return ifStatement();
     if (match(TokenType.PRINT)) return printStatement();
+    if (match(TokenType.RETURN)) return returnStatement();
     if (match(TokenType.WHILE)) return whileStatement();
     if (match(TokenType.LEFT_BRACE)) return Block(block());
 
@@ -134,6 +137,21 @@ const createParser = tokens => {
     return Print(value);
   };
 
+  const returnStatement = () => {
+    const keyword = previous();
+    let value = null;
+
+    if (!check(TokenType.SEMICOLON)) {
+      value = expression();
+    }
+
+    consume(TokenType.SEMICOLON, "Expect ';' after return value.");
+
+    const test = Return(keyword, value);
+
+    return test;
+  }
+
   // varDeclaration --> "var" IDENTIFIER ( "=" expression )? ";" ;
   const varDeclaration = () => {
     const name = consume(TokenType.IDENTIFIER, "Expect variable name.");
@@ -173,6 +191,7 @@ const createParser = tokens => {
     consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
     return statements;
   };
+  //error here!!!
 
   // assignment --> IDENTIFIER "=" assignment | logic_or ;
   const assignment = () => {
@@ -184,7 +203,8 @@ const createParser = tokens => {
 
       if (expr.type === "Variable") {
         const name = expr.name;
-        return Assign(name, value);
+        const nodeId = nextNodeId++;
+        return Assign(name, value, nodeId);
       }
 
       error(equals, "Invalid assignment target.");
@@ -325,7 +345,8 @@ const createParser = tokens => {
     }
 
     if (match(TokenType.IDENTIFIER)) {
-      return Variable(previous());
+        const nodeId = nextNodeId++;
+      return Variable(previous(), nodeId);
     }
 
     if (match(TokenType.LEFT_PAREN)) {
