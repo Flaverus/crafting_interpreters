@@ -6,6 +6,7 @@ import { error as loxError } from './Lox.js';
 // Factory function that creates a parser instance with functional style. Again slight naming difference
 const createParser = tokens => {
   let current = 0; // Pointer to current token
+  let nextNodeId = 0; //
 
   // Main parse function
   const parse = () => {
@@ -202,7 +203,8 @@ const createParser = tokens => {
 
       if (expr.type === "Variable") {
         const name = expr.name;
-        return Assign(name, value);
+        const nodeId = nextNodeId++;
+        return Assign(name, value, nodeId);
       }
 
       error(equals, "Invalid assignment target.");
@@ -343,7 +345,8 @@ const createParser = tokens => {
     }
 
     if (match(TokenType.IDENTIFIER)) {
-      return Variable(previous());
+        const nodeId = nextNodeId++;
+      return Variable(previous(), nodeId);
     }
 
     if (match(TokenType.LEFT_PAREN)) {

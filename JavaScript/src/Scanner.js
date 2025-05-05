@@ -1,5 +1,6 @@
 import TokenType from './TokenType.js';  // Import TokenType
 import Token from './Token.js';          // Import Token
+import { error as loxError } from './Lox.js';
 
 // Use again immutable Object. Could be Map but I felt more like using an Object.
 const keywords = Object.freeze({
@@ -68,7 +69,7 @@ const createScanner = source => { // Different naming to Java for better underst
       default:
         if (isDigit(c)) number();
         else if (isAlpha(c)) identifier();
-        else Lox.error(line, 'Unexpected character.');
+        else loxError(line, 'Unexpected character.');
     }
   };
 
@@ -80,7 +81,7 @@ const createScanner = source => { // Different naming to Java for better underst
     }
 
     if (isAtEnd()) {
-      Lox.error(line, 'Unterminated string.');
+      loxError(line, 'Unterminated string.');
       return;
     }
 

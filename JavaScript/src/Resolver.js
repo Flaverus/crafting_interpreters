@@ -27,11 +27,11 @@ const createResolver = (interpreter) => {
     scopes.at(-1).set(name.lexeme, true);
   };
 
-  const resolveLocal = (expr, name) => {
+  const resolveLocal = (nodeId, name) => {
     for (let i = scopes.length - 1; i >= 0; i--) {
       const scope = scopes[i];
       if (scope.has(name.lexeme)) {
-        interpreter.resolve(expr, scopes.length - 1 - i);
+        interpreter.resolve(nodeId, scopes.length - 1 - i);
         return;
       }
     }
@@ -107,9 +107,9 @@ const createResolver = (interpreter) => {
       resolve(body);
     },
 
-    Assign: (name, value) => {
+    Assign: (name, value, nodeId) => {
       resolve(value);
-      resolveLocal({ type: "Variable", name }, name); // Assuming a basic Variable node
+      resolveLocal(nodeId, name); // Assuming a basic Variable node
     },
 
     Binary: (left, operator, right) => {
@@ -141,11 +141,11 @@ const createResolver = (interpreter) => {
       resolve(right);
     },
 
-    Variable: (name) => {
+    Variable: (name, nodeId) => {
       if (scopes.length > 0 && scopes.at(-1).get(name.lexeme) === false) {
         loxError(name, "Can't read local variable in its own initializer.");
       }
-      resolveLocal({ type: "Variable", name }, name); // Assuming a basic Variable node
+      resolveLocal(nodeId, name); // Assuming a basic Variable node
     },
   };
 

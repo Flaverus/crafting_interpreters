@@ -1,10 +1,11 @@
 // In JS we use factory functions that return plain objects instead of classes.
 
-export const Assign = (name, value) => ({
+export const Assign = (name, value, nodeId) => ({
   type: "Assign",
   name,
   value,
-  accept: (visitor) => visitor.Assign(name, value)
+  nodeId,
+  accept: (visitor) => visitor.Assign(name, value, nodeId)
 })
 
 export const Binary = (left, operator, right) => ({
@@ -51,8 +52,9 @@ export const Unary = (operator, right) => ({
   accept: (visitor) => visitor.Unary(operator, right),
 });
 
-export const Variable = (name) => ({
+export const Variable = (name, nodeId) => ({
   type: "Variable",
   name,
-  accept: (visitor) => visitor.Variable(name),
+  nodeId,
+  accept: (visitor) => visitor.Variable(name, nodeId),
 });

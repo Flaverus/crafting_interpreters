@@ -124,8 +124,8 @@ const createInterpreter = () => {
       }
     },
 
-    Variable: (name) => {
-      return lookUpVariable(name, { type: "Variable", name });
+    Variable: (name, nodeId) => {
+      return lookUpVariable(name, nodeId);
     },
 
     Block: (statements) => {
@@ -186,10 +186,10 @@ const createInterpreter = () => {
       return null;
     },
 
-    Assign: (name, val) => {
+    Assign: (name, val, nodeId) => {
       const value = evaluate(val);
 
-      const distance = locals.get(expr);
+      const distance = locals.get(nodeId); //@TODO not working like that...
       if (distance !== undefined) {
         environment.assignAt(name, distance, value);
       } else {
@@ -205,13 +205,13 @@ const createInterpreter = () => {
     return expr.accept(interpreter); // Giving interpreter Object to the accept function of the passed expression, resulting in the accept function from the visitor (interpreter Object) being called
   };
 
-  const resolve = (expr, depth) => {
-    locals.set(expr, depth);
+  const resolve = (_uniqueId, depth) => {
+    locals.set(_uniqueId, depth);
   };
 
-  const lookUpVariable = (name, expr) => {
+  const lookUpVariable = (name, nodeId) => {
       //@TODO --> Problem lies here. I'm not getting distance as I'm not working with the expr object...
-    const distance = locals.get(expr);
+    const distance = locals.get(nodeId);
     if (distance !== undefined) {
       return environment.getAt(name, distance);
     } else {
