@@ -2,7 +2,7 @@ import { error as loxError } from './Lox.js';
 
 const createResolver = (interpreter) => {
   const scopes = []; // Using array as a stack
-  let currentFunction = "NONE";
+  let currentFunction = "NONE"; //@TODO create pseudo "ENUM"
 
   const beginScope = () => {
     scopes.push(new Map());
@@ -67,6 +67,11 @@ const createResolver = (interpreter) => {
         resolve(statement);
       }
       endScope();
+    },
+
+    Class: (name, methods) => {
+      declare(name);
+      define(name);
     },
 
     Expression: (expression) => {

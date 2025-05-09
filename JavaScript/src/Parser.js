@@ -1,5 +1,5 @@
 import { Assign, Binary, Call, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
-import { Block, Expression, Function, If, Print, Return, Var, While } from './Stmt.js'
+import { Block, Class, Expression, Function, If, Print, Return, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
 
@@ -43,9 +43,10 @@ const createParser = tokens => {
     return Function(name, parameters, body);
   }
 
-  // declaration --> funDecl | varDecl | statement ;
+  // declaration --> classDecl | funDecl | varDecl | statement ;
   const declaration = () => {
     try {
+      if (match(TokenType.CLASS)) return classDeclaration();
       if (match(TokenType.FUN)) return func("function");
       if (match(TokenType.VAR)) return varDeclaration();
       return statement();
@@ -53,6 +54,21 @@ const createParser = tokens => {
       synchronize();
       return null;
     }
+  };
+
+  // classDeclaration --> "class" IDENTIFIER "{" function* "}" ;
+  const classDeclaration = () => {
+    const name = consume(TokenType.IDENTIFIER, "Expect class name.");
+    consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
+
+    const methods = [];
+    while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+      methods.push(func("method"));
+    }
+
+    consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
+
+    return Class(name, methods);
   };
 
   // statement --> expressionStatement | forStatement | ifStatement | printStatement | returnStatement | whileStatement | block ;

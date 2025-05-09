@@ -4,6 +4,13 @@ export const Block = (statements) => ({
   accept: (visitor) => visitor.Block(statements),
 });
 
+export const Class = (name, methods) => ({
+  type: "Class",
+  name,
+  methods,
+  accept: (visitor) => visitor.Class(name, methods),
+});
+
 export const Expression = (expression) => ({
   type: "Expression",
   expression,
@@ -15,7 +22,7 @@ export const Function = (name, params, body) => ({
   name,
   params,
   body,
-  accept: (visitor) => visitor.Function(name, params, body), //? name space?
+  accept: (visitor) => visitor.Function(name, params, body),
 });
 
 export const If = (condition, thenBranch, elseBranch) => ({

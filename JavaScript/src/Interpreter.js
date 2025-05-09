@@ -1,6 +1,7 @@
 import TokenType from './TokenType.js';
 import { createLoxCallable } from './LoxCallable.js';
 import createLoxFunction from './LoxFunction.js'
+import createLoxClass from './LoxClass.js';
 import createEnvironment from './Environment.js';
 import RuntimeError from './RuntimeError.js';
 import Return from './Return.js';
@@ -133,13 +134,18 @@ const createInterpreter = () => {
       return null;
     },
 
+    Class: (name, methods) => {
+      environment.define(name.lexeme, null);
+      const klass = createLoxClass(name.lexeme);
+      environment.assign(name, klass);
+    },
+
     Expression: (expression) => {
       evaluate(expression);
       return null;
     },
 
     Function: (name, params, body) => {
-
       const func = createLoxFunction(name, params, body, environment);
       environment.define(name.lexeme, func);
       return null;
