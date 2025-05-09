@@ -73,10 +73,15 @@ const createResolver = (interpreter) => {
       declare(name);
       define(name);
 
+      beginScope();
+      scopes.at(-1).set("this", true);
+
       for (const method of methods) {
         const declaration = 'METHOD';
         resolveFunction(method, declaration);
       }
+
+      endScope();
     },
 
     Expression: (expression) => {
@@ -154,6 +159,10 @@ const createResolver = (interpreter) => {
     Set: (object, name, value) => {
       resolve(value);
       resolve(object);
+    },
+
+    This: (keyword, nodeId) => {
+      resolveLocal(nodeId, keyword);
     },
 
     Unary: (operator, right) => {

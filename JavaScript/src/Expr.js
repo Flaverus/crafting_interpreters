@@ -60,6 +60,13 @@ export const Set = (object, name, value) => ({
   accept: (visitor) => visitor.Set(object, name, value),
 });
 
+export const This = (keyword, nodeId) => ({
+  type: "This",
+  keyword,
+  nodeId,
+  accept: (visitor) => visitor.This(keyword, nodeId),
+});
+
 export const Unary = (operator, right) => ({
   type: "Unary",
   operator,

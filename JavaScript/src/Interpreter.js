@@ -135,6 +135,10 @@ const createInterpreter = () => {
       return value;
     },
 
+    This: (keyword, nodeId) => {
+      return lookUpVariable(keyword, nodeId);
+    },
+
     Unary: (operator, right) => {
       const rightValue = evaluate(right);
 

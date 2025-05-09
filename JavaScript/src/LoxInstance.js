@@ -2,7 +2,7 @@ import RuntimeError from './RuntimeError.js';
 
 const createLoxInstance = (name, findMethod) => {
   const fields = new Map();
-  return {
+  const instance = {
     name,
     get: (nameToken) => {
       if (fields.has(nameToken.lexeme)) {
@@ -10,7 +10,7 @@ const createLoxInstance = (name, findMethod) => {
       }
 
       const method = findMethod(nameToken.lexeme);
-      if (method !== null) return method;
+      if (method !== null) return method.bind(instance);
 
       throw new RuntimeError(nameToken, `Undefined property '${nameToken.lexeme}'.`);
     },
@@ -19,6 +19,8 @@ const createLoxInstance = (name, findMethod) => {
     },
     toString: () => name + " instance"
   };
+
+  return instance;
 }
 
 export default createLoxInstance;

@@ -3,7 +3,13 @@ import createEnvironment from './Environment.js';
 
 const createLoxFunction = (name, params, body, closure) => {
 
-  return createLoxCallable(
+  const bind = (instance) => {
+    const environment = createEnvironment(closure);
+    environment.define("this", instance);
+    return createLoxFunction(name, params, body, environment);
+  }
+
+  const callable = createLoxCallable(
     // arity function
     () => params.length,
 
@@ -26,6 +32,11 @@ const createLoxFunction = (name, params, body, closure) => {
     // toString function
     () => `<fn ${name.lexeme}>`
   );
+
+    return {
+      ...callable,
+      bind,
+    };
 };
 
 export default createLoxFunction;

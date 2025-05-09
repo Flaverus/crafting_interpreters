@@ -1,4 +1,4 @@
-import { Assign, Binary, Call, Get, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
+import { Assign, Binary, Call, Get, Grouping, Literal, Logical, Set, This, Unary, Variable } from './Expr.js';
 import { Block, Class, Expression, Function, If, Print, Return, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
@@ -364,8 +364,13 @@ const createParser = tokens => {
       return Literal(previous().literal);
     }
 
+    if (match(TokenType.THIS)) {
+      const nodeId = nextNodeId++;
+      return This(previous(), nodeId);
+    }
+
     if (match(TokenType.IDENTIFIER)) {
-        const nodeId = nextNodeId++;
+      const nodeId = nextNodeId++;
       return Variable(previous(), nodeId);
     }
 
