@@ -12,11 +12,19 @@ const createLoxClass = (name, methods) => {
 
   return createLoxCallable(
     // arity function
-    () => 0,
+    () => {
+      const initializer = findMethod("init");
+      if (initializer === null) return 0;
+      return initializer.arity();
+    },
 
     // call function
-    () => {
+    (interpreter, args) => {
       const instance = createLoxInstance(name, findMethod);
+      const initializer = findMethod('init');
+      if (initializer !== null) {
+        initializer.bind(instance).call(interpreter, args);
+      }
       return instance;
     },
 

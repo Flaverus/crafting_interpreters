@@ -28,9 +28,9 @@ const createEnvironment = (enclosing = null) => {
     return environment;
   };
 
-    const getAt = (name, distance) => {
-      return ancestor(distance).values.get(name.lexeme);
-    };
+  const getAt = (distance, name) => {
+    return ancestor(distance).values.get(name);
+  };
 
   const assign = (name, value) => {
     if (values.has(name.lexeme)) {

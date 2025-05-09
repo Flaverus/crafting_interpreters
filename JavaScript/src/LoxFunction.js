@@ -1,12 +1,12 @@
 import { createLoxCallable } from './LoxCallable.js';
 import createEnvironment from './Environment.js';
 
-const createLoxFunction = (name, params, body, closure) => {
+const createLoxFunction = (name, params, body, closure, isInitializer) => {
 
   const bind = (instance) => {
     const environment = createEnvironment(closure);
     environment.define("this", instance);
-    return createLoxFunction(name, params, body, environment);
+    return createLoxFunction(name, params, body, environment, isInitializer);
   }
 
   const callable = createLoxCallable(
@@ -24,8 +24,11 @@ const createLoxFunction = (name, params, body, closure) => {
       try {
         executeBlock(body, environment);
       } catch (returnValue) {
+        if (isInitializer) return closure.getAt(0, "this");
         return returnValue.value;
       }
+
+      if (isInitializer) return closure.getAt(0, "this");
       return null;
     },
 

@@ -2,7 +2,8 @@ import { error as loxError } from './Lox.js';
 
 const createResolver = (interpreter) => {
   const scopes = []; // Using array as a stack
-  let currentFunction = "NONE"; //@TODO create pseudo "ENUM" --> NONE, FUNCTION, METHOD
+  let currentFunction = 'NONE'; //@TODO create pseudo "ENUM" --> NONE, FUNCTION, METHOD
+  let currentClass = 'CLASS' // --> also add ClassType ENUM!
 
   const beginScope = () => {
     scopes.push(new Map());
@@ -70,6 +71,8 @@ const createResolver = (interpreter) => {
     },
 
     Class: (name, methods) => {
+      const enclosingClass = currentClass; // @TODO: Change ENUM!
+
       declare(name);
       define(name);
 
@@ -77,11 +80,16 @@ const createResolver = (interpreter) => {
       scopes.at(-1).set("this", true);
 
       for (const method of methods) {
-        const declaration = 'METHOD';
+        let declaration = 'METHOD';
+        if (method.name.lexeme === ("init")) {
+          declaration = 'INITIALIZER';
+        }
         resolveFunction(method, declaration);
       }
 
       endScope();
+
+      currentClass = enclosingClass;
     },
 
     Expression: (expression) => {
@@ -108,7 +116,12 @@ const createResolver = (interpreter) => {
       if (currentFunction === "NONE") {
         loxError(keyword, "Can't return from top-level code.");
       }
-      if (value) resolve(value);
+      if (value) {
+        if(currentFunction === "INITIALIZER") {
+          loxError(keyword, "Can't return a value from an initializer.");
+        }
+        resolve(value);
+      }
     },
 
     Var: (name, initializer) => {
@@ -162,6 +175,9 @@ const createResolver = (interpreter) => {
     },
 
     This: (keyword, nodeId) => {
+      if(currentClass === 'NONE') {
+        loxError(keyword, "Can't use 'this' outside of a class.");
+      }
       resolveLocal(nodeId, keyword);
     },
 

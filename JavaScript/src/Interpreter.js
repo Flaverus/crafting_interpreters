@@ -165,7 +165,7 @@ const createInterpreter = () => {
 
       const methods = new Map();
       for (const method of meths) {
-        const func = createLoxFunction(method.name, method.params, method.body, environment, 'METHOD');
+        const func = createLoxFunction(method.name, method.params, method.body, environment, method.name.lexeme === 'init');
         methods.set(method.name.lexeme, func);
       }
 
@@ -180,7 +180,7 @@ const createInterpreter = () => {
     },
 
     Function: (name, params, body) => {
-      const func = createLoxFunction(name, params, body, environment);
+      const func = createLoxFunction(name, params, body, environment, false);
       environment.define(name.lexeme, func);
       return null;
     },
@@ -253,7 +253,7 @@ const createInterpreter = () => {
       //@TODO --> Problem lies here. I'm not getting distance as I'm not working with the expr object...
     const distance = locals.get(nodeId);
     if (distance !== undefined) {
-      return environment.getAt(name, distance);
+      return environment.getAt(distance, name.lexeme);
     } else {
       return globals.get(name);
     }
