@@ -81,12 +81,12 @@ const createInterpreter = () => {
       }
     },
 
-    Call: (cle, paren, args) => { // ERROR here???
+    Call: (cle, paren, args) => {
       const callee = evaluate(cle);
 
-      const argVals = args.map(arg => evaluate(arg)); //?
+      const argVals = args.map(arg => evaluate(arg));
 
-      if (typeof callee.call !== 'function') { //?
+      if (typeof callee.call !== 'function') {
         throw new RuntimeError(paren, "Can only call functions and classes.");
       }
 
@@ -95,6 +95,16 @@ const createInterpreter = () => {
       }
 
       return callee.call(executeBlock, argVals); // Different as I can not send this..?
+    },
+
+    Get: (obj, name) => {
+      const object = evaluate(obj);
+
+      if (object && typeof object.get === 'function') {
+        return object.get(name);
+      }
+
+      throw new RuntimeError(name, "Only instances have properties.");
     },
 
     Grouping: (expression) => evaluate(expression),
@@ -111,6 +121,18 @@ const createInterpreter = () => {
       }
 
       return evaluate(right);
+    },
+
+    Set: (obj, name, val) => {
+      const object = evaluate(obj);
+
+      if (!object || typeof object.set !== 'function') {
+        throw new RuntimeError(nameToken, "Only instances have fields.");
+      }
+
+      const value = evaluate(val);
+      object.set(name, value);
+      return value;
     },
 
     Unary: (operator, right) => {
@@ -134,9 +156,17 @@ const createInterpreter = () => {
       return null;
     },
 
-    Class: (name, methods) => {
+    Class: (name, meths) => {
       environment.define(name.lexeme, null);
-      const klass = createLoxClass(name.lexeme);
+
+      const methods = new Map();
+      for (const method of meths) {
+        const func = createLoxFunction(method.name, method.params, method.body, environment, 'METHOD');
+        methods.set(method.name.lexeme, func);
+      }
+
+      const klass = createLoxClass(name.lexeme, methods);
+
       environment.assign(name, klass);
     },
 

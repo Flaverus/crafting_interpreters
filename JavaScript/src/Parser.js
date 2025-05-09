@@ -1,4 +1,4 @@
-import { Assign, Binary, Call, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
+import { Assign, Binary, Call, Get, Grouping, Literal, Logical, Unary, Variable } from './Expr.js';
 import { Block, Class, Expression, Function, If, Print, Return, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
@@ -207,9 +207,8 @@ const createParser = tokens => {
     consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
     return statements;
   };
-  //error here!!!
 
-  // assignment --> IDENTIFIER "=" assignment | logic_or ;
+  // assignment --> ( call "." )? IDENTIFIER "=" assignment | logic_or ;
   const assignment = () => {
     let expr = or();
 
@@ -221,6 +220,8 @@ const createParser = tokens => {
         const name = expr.name;
         const nodeId = nextNodeId++;
         return Assign(name, value, nodeId);
+      } else if (expr.type === "Get") {
+        return Set(expr.object, expr.name, value);
       }
 
       error(equals, "Invalid assignment target.");
@@ -335,13 +336,16 @@ const createParser = tokens => {
       return Call(callee, paren, args);
   }
 
-  // call --> primary ( "(" arguments? ")" )* ;
+  // call --> primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
   const call = () => {
     let expr = primary();
 
     while (true) {
       if (match(TokenType.LEFT_PAREN)) {
         expr = finishCall(expr);
+      } else if (match(TokenType.DOT)) {
+        const name = consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+        expr = Get(expr, name);
       } else {
         break;
       }

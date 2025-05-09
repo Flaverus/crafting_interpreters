@@ -25,6 +25,13 @@ export const Call = (callee, paren, args) => ({
   accept: (visitor) => visitor.Call(callee, paren, args),
 });
 
+export const Get = (object, name) => ({
+  type: "Get",
+  object,
+  name,
+  accept: (visitor) => visitor.Get(object, name),
+});
+
 export const Grouping = (expression) => ({
   type: "Grouping",
   expression,
@@ -43,6 +50,14 @@ export const Logical = (left, operator, right) => ({
   operator,
   right,
   accept: (visitor) => visitor.Logical(left, operator, right),
+});
+
+export const Set = (object, name, value) => ({
+  type: "Set",
+  object,
+  name,
+  value,
+  accept: (visitor) => visitor.Set(object, name, value),
 });
 
 export const Unary = (operator, right) => ({
