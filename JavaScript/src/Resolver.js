@@ -81,6 +81,7 @@ const createResolver = (interpreter) => {
       }
 
       if (superclass !== null) {
+        currentClass = "SUBCLASS";
         resolve(superclass);
       }
 
@@ -190,6 +191,12 @@ const createResolver = (interpreter) => {
     },
 
     Super: (keyword, method, nodeId) => {
+      if (currentClass === "NONE") {
+        loxError(keyword, "Can't use 'super' outside of a class.");
+      } else if (currentClass !== "SUBCLASS") {
+        loxError(keyword, "Can't use 'super' in a class with no superclass.");
+      }
+
       resolveLocal(nodeId, keyword);
     },
 
