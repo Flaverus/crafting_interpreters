@@ -84,6 +84,11 @@ const createResolver = (interpreter) => {
         resolve(superclass);
       }
 
+      if (superclass !== null) {
+        beginScope();
+        scopes.at(-1).set("super", true);
+      }
+
       beginScope();
       scopes.at(-1).set("this", true);
 
@@ -96,6 +101,8 @@ const createResolver = (interpreter) => {
       }
 
       endScope();
+
+      if (superclass !== null) endScope();
 
       currentClass = enclosingClass;
     },
@@ -180,6 +187,10 @@ const createResolver = (interpreter) => {
     Set: (object, name, value) => {
       resolve(value);
       resolve(object);
+    },
+
+    Super: (keyword, method, nodeId) => {
+      resolveLocal(nodeId, keyword);
     },
 
     This: (keyword, nodeId) => {

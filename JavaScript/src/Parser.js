@@ -1,4 +1,4 @@
-import { Assign, Binary, Call, Get, Grouping, Literal, Logical, Set, This, Unary, Variable } from './Expr.js';
+import { Assign, Binary, Call, Get, Grouping, Literal, Logical, Set, Super, This, Unary, Variable } from './Expr.js';
 import { Block, Class, Expression, Function, If, Print, Return, Var, While } from './Stmt.js'
 import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
@@ -361,7 +361,7 @@ const createParser = tokens => {
     return expr;
   }
 
-  // primary --> "false" | "true" | "nil" | NUMBER | STRING | "(" expression ")" | IDENTIFIER ;
+  // primary --> "false" | "true" | "nil" | "this" | NUMBER | STRING | "(" expression ")" | IDENTIFIER | "super" "." IDENTIFIER ;
   const primary = () => {
     if (match(TokenType.FALSE)) return Literal(false);
     if (match(TokenType.TRUE)) return Literal(true);
@@ -369,6 +369,14 @@ const createParser = tokens => {
 
     if (match(TokenType.NUMBER, TokenType.STRING)) {
       return Literal(previous().literal);
+    }
+
+    if (match(TokenType.SUPER)) {
+      const keyword = previous();
+      consume(TokenType.DOT, "Expect '.' after 'super'.");
+      const method = consume(TokenType.IDENTIFIER, "Expect superclass method name.");
+      const nodeId = nextNodeId++;
+      return Super(keyword, method, nodeId);
     }
 
     if (match(TokenType.THIS)) {

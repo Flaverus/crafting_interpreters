@@ -60,6 +60,14 @@ export const Set = (object, name, value) => ({
   accept: (visitor) => visitor.Set(object, name, value),
 });
 
+export const Super = (keyword, method, nodeId) => ({
+  type: "Super",
+  keyword,
+  method,
+  nodeId,
+  accept: (visitor) => visitor.Super(keyword, method, nodeId),
+});
+
 export const This = (keyword, nodeId) => ({
   type: "This",
   keyword,

@@ -135,6 +135,20 @@ const createInterpreter = () => {
       return value;
     },
 
+    Super: (keyword, mthd, nodeId) => {
+      const distance = locals.get(nodeId);
+      const superclass = environment.getAt(distance, "super");
+      const object = environment.getAt(distance - 1, "this");
+
+      const method = superclass.findMethod(mthd.lexeme);
+
+      if (method === null) {
+        throw new RuntimeError(method, "Undefined property '" + mthd.lexeme + "'.");
+      }
+
+      return method.bind(object);
+    },
+
     This: (keyword, nodeId) => {
       return lookUpVariable(keyword, nodeId);
     },
@@ -171,6 +185,11 @@ const createInterpreter = () => {
 
       environment.define(name.lexeme, null);
 
+      if (sprclass !== null) {
+        environment = createEnvironment(environment);
+        environment.define("super", superclass);
+      }
+
       const methods = new Map();
       for (const method of meths) {
         const func = createLoxFunction(method.name, method.params, method.body, environment, method.name.lexeme === 'init');
@@ -178,6 +197,10 @@ const createInterpreter = () => {
       }
 
       const klass = createLoxClass(name.lexeme, superclass, methods);
+
+      if (superclass !== null) {
+        environment = environment.enclosing;
+      }
 
       environment.assign(name, klass);
     },
@@ -237,7 +260,7 @@ const createInterpreter = () => {
     Assign: (name, val, nodeId) => {
       const value = evaluate(val);
 
-      const distance = locals.get(nodeId); //@TODO not working like that...
+      const distance = locals.get(nodeId);
       if (distance !== undefined) {
         environment.assignAt(name, distance, value);
       } else {
@@ -258,7 +281,6 @@ const createInterpreter = () => {
   };
 
   const lookUpVariable = (name, nodeId) => {
-      //@TODO --> Problem lies here. I'm not getting distance as I'm not working with the expr object...
     const distance = locals.get(nodeId);
     if (distance !== undefined) {
       return environment.getAt(distance, name.lexeme);
