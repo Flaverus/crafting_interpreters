@@ -114,7 +114,7 @@ const createInterpreter = () => {
     Logical: (lft, operator, right) => {
       const left = evaluate(lft);
 
-      if (operator.type == TokenType.OR) { //??
+      if (operator.type === TokenType.OR) { //??
         if (isTruthy(left)) return left;
       } else {
         if (!isTruthy(left)) return left;
@@ -160,7 +160,15 @@ const createInterpreter = () => {
       return null;
     },
 
-    Class: (name, meths) => {
+    Class: (name, sprclass, meths) => {
+      let superclass = null;
+      if (sprclass !== null) {
+        superclass = evaluate(sprclass);
+        if (!superclass || typeof superclass.findMethod !== "function") {
+          throw new RuntimeError(sprclass.name, "Superclass must be a class.");
+        }
+      }
+
       environment.define(name.lexeme, null);
 
       const methods = new Map();
@@ -169,7 +177,7 @@ const createInterpreter = () => {
         methods.set(method.name.lexeme, func);
       }
 
-      const klass = createLoxClass(name.lexeme, methods);
+      const klass = createLoxClass(name.lexeme, superclass, methods);
 
       environment.assign(name, klass);
     },
@@ -188,7 +196,7 @@ const createInterpreter = () => {
     If: (condition, thenBranch, elseBranch) => {
       if (isTruthy(evaluate(condition))) {
         execute(thenBranch);
-      } else if (elseBranch != null) {
+      } else if (elseBranch !== null) {
         execute(elseBranch);
       }
       return null;
@@ -204,14 +212,14 @@ const createInterpreter = () => {
     Return: (keyword, val) => {
       let value = null;
 
-      if(val != null) value = evaluate(val);
+      if(val !== null) value = evaluate(val);
 
       throw new Return(value);
     },
 
     Var: (name, initializer) => {
       let value = null;
-      if(initializer != null) {
+      if(initializer !== null) {
         value = evaluate(initializer);
       }
 

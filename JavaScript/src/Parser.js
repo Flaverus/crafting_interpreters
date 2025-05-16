@@ -56,9 +56,16 @@ const createParser = tokens => {
     }
   };
 
-  // classDeclaration --> "class" IDENTIFIER "{" function* "}" ;
+  // classDeclaration --> "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
   const classDeclaration = () => {
     const name = consume(TokenType.IDENTIFIER, "Expect class name.");
+
+    let superclass = null;
+    if (match(TokenType.LESS)) {
+      consume(TokenType.IDENTIFIER, "Expect superclass name.");
+      superclass = Variable(previous());
+    }
+
     consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
 
     const methods = [];
@@ -68,7 +75,7 @@ const createParser = tokens => {
 
     consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
 
-    return Class(name, methods);
+    return Class(name, superclass, methods);
   };
 
   // statement --> expressionStatement | forStatement | ifStatement | printStatement | returnStatement | whileStatement | block ;

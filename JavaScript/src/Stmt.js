@@ -4,11 +4,12 @@ export const Block = (statements) => ({
   accept: (visitor) => visitor.Block(statements),
 });
 
-export const Class = (name, methods) => ({
+export const Class = (name, superclass, methods) => ({
   type: "Class",
   name,
+  superclass,
   methods,
-  accept: (visitor) => visitor.Class(name, methods),
+  accept: (visitor) => visitor.Class(name, superclass, methods),
 });
 
 export const Expression = (expression) => ({

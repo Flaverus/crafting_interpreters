@@ -70,11 +70,19 @@ const createResolver = (interpreter) => {
       endScope();
     },
 
-    Class: (name, methods) => {
+    Class: (name, superclass, methods) => {
       const enclosingClass = currentClass; // @TODO: Change ENUM!
 
       declare(name);
       define(name);
+
+      if (superclass !== null && name.lexeme === superclass.name.lexeme) {
+        loxError(superclass.name, "A class can't inherit from itself.");
+      }
+
+      if (superclass !== null) {
+        resolve(superclass);
+      }
 
       beginScope();
       scopes.at(-1).set("this", true);

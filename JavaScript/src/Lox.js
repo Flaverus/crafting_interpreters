@@ -11,6 +11,7 @@ let hadError = false;
 let hadRuntimeError = false;
 
 // node src/lox.js to start
+// node src/Lox.js loxfiles/one.lox
 
 const main = () => {
   const [path] = process.argv.slice(2); // Get path if provided
