@@ -1,4 +1,5 @@
 // In JS we use factory functions that return plain objects instead of classes.
+// Instead of inheritance, we use an object with a `type` field for pattern matching.
 
 export const Assign = (name, value, nodeId) => ({
   type: "Assign",
@@ -9,12 +10,11 @@ export const Assign = (name, value, nodeId) => ({
 })
 
 export const Binary = (left, operator, right) => ({
-  // Instead of inheritance, we use an object with a `type` field for pattern matching.
   type: "Binary",
   left,
   operator,
   right,
-  accept: (visitor) => visitor.Binary(left, operator, right),   // We use a function that directly calls the appropriate visitor method.
+  accept: (visitor) => visitor.Binary(left, operator, right),
 });
 
 export const Call = (callee, paren, args) => ({

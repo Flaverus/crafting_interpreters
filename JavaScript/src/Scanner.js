@@ -1,5 +1,5 @@
-import TokenType from './TokenType.js';  // Import TokenType
-import Token from './Token.js';          // Import Token
+import TokenType from './TokenType.js';
+import Token from './Token.js';
 import { error as loxError } from './Lox.js';
 
 // Use again immutable Object. Could be Map but I felt more like using an Object.

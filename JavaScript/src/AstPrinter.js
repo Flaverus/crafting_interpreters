@@ -1,6 +1,6 @@
 import { Binary, Grouping, Literal, Unary } from "./Expr.js";
-import TokenType from './TokenType.js';  // Import TokenType
-import Token from './Token.js';          // Import Token
+import TokenType from './TokenType.js';
+import Token from './Token.js';
 
 // Instead of defining a class with methods, we use an object with functions.
 const AstPrinter = {
@@ -20,7 +20,6 @@ const AstPrinter = {
     parenthesize(operator.lexeme, right),
 };
 
-// This function mimics Java parenthesize(String name, Expr... exprs)
 const parenthesize = (name, ...exprs) => {
   // Start the string with the operator or function name
   return `(${name} ${exprs.map((expr) => expr.accept(AstPrinter)).join(" ")})`;
@@ -35,7 +34,5 @@ const exampleExpr = Binary(
   Grouping(Literal(45.67))
 );
 
-// console.log(AstPrinter.print(exampleExpr)); // Output: "(* (- 123) (group 45.67))"
-// node src/AstPrinter.js
 
 export default AstPrinter;

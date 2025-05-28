@@ -1,9 +1,11 @@
 import { error as loxError } from './Lox.js';
+import ClassType from './ClassType.js';
+import FunctionType from './FunctionType.js';
 
 const createResolver = (interpreter) => {
   const scopes = []; // Using array as a stack
-  let currentFunction = 'NONE'; //@TODO create pseudo "ENUM" --> NONE, FUNCTION, METHOD
-  let currentClass = 'CLASS' // --> also add ClassType ENUM!
+  let currentFunction = FunctionType.NONE;
+  let currentClass = ClassType.CLASS
 
   const beginScope = () => {
     scopes.push(new Map());
@@ -71,7 +73,7 @@ const createResolver = (interpreter) => {
     },
 
     Class: (name, superclass, methods) => {
-      const enclosingClass = currentClass; // @TODO: Change ENUM!
+      const enclosingClass = currentClass;
 
       declare(name);
       define(name);
@@ -81,7 +83,7 @@ const createResolver = (interpreter) => {
       }
 
       if (superclass !== null) {
-        currentClass = "SUBCLASS";
+        currentClass = ClassType.SUBCLASS;
         resolve(superclass);
       }
 
@@ -94,9 +96,9 @@ const createResolver = (interpreter) => {
       scopes.at(-1).set("this", true);
 
       for (const method of methods) {
-        let declaration = 'METHOD';
+        let declaration = FunctionType.METHOD;
         if (method.name.lexeme === ("init")) {
-          declaration = 'INITIALIZER';
+          declaration = FunctionType.INITIALIZER;
         }
         resolveFunction(method, declaration);
       }
@@ -115,7 +117,7 @@ const createResolver = (interpreter) => {
     Function: (name, params, body) => {
       declare(name);
       define(name);
-      resolveFunction({ params, body }, "FUNCTION"); // Creating a temp object
+      resolveFunction({ params, body }, FunctionType.FUNCTION); // Creating a temp object
     },
 
     If: (condition, thenBranch, elseBranch) => {
@@ -129,11 +131,11 @@ const createResolver = (interpreter) => {
     },
 
     Return: (keyword, value) => {
-      if (currentFunction === "NONE") {
+      if (currentFunction === FunctionType.NONE) {
         loxError(keyword, "Can't return from top-level code.");
       }
       if (value) {
-        if(currentFunction === "INITIALIZER") {
+        if(currentFunction === FunctionType.INITIALIZER) {
           loxError(keyword, "Can't return a value from an initializer.");
         }
         resolve(value);
@@ -191,9 +193,9 @@ const createResolver = (interpreter) => {
     },
 
     Super: (keyword, method, nodeId) => {
-      if (currentClass === "NONE") {
+      if (currentClass === ClassType.NONE) {
         loxError(keyword, "Can't use 'super' outside of a class.");
-      } else if (currentClass !== "SUBCLASS") {
+      } else if (currentClass !== ClassType.SUBCLASS) {
         loxError(keyword, "Can't use 'super' in a class with no superclass.");
       }
 
@@ -201,7 +203,7 @@ const createResolver = (interpreter) => {
     },
 
     This: (keyword, nodeId) => {
-      if(currentClass === 'NONE') {
+      if(currentClass === ClassType.NONE) {
         loxError(keyword, "Can't use 'this' outside of a class.");
       }
       resolveLocal(nodeId, keyword);

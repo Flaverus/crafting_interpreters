@@ -1,6 +1,11 @@
-class Eclair {
-  cook() {
-    super.cook();
-    print "Pipe full of crème pâtissière.";
-  }
+var a = 0;
+
+var temp;
+
+var b = 1;
+
+for(var b = 1; a < 1000; b = temp + b) {
+    print a;
+    temp = a;
+    a = b;
 }

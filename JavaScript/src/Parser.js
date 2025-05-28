@@ -6,7 +6,7 @@ import { error as loxError } from './Lox.js';
 // Factory function that creates a parser instance with functional style. Again slight naming difference
 const createParser = tokens => {
   let current = 0; // Pointer to current token
-  let nextNodeId = 0; //
+  let nextNodeId = 0; // For identifying and resolving local variables. Was chosen as I decided to return the values separately instead of an object in Expr and Stmt
 
   // Main parse function
   const parse = () => {

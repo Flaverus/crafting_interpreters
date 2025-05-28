@@ -17,7 +17,7 @@ const createInterpreter = () => {
   // Define the 'clock' native function in the globals environment using LoxCallable
   globals.define("clock", createLoxCallable(
     0,  // Arity: clock takes 0 arguments
-    (interpreter, args) => { // Args needed?
+    (interpreter, args) => {
       return Date.now() / 1000;  // Return time in seconds
     },
     () => "<native fn>",  // String representation of the function
@@ -114,7 +114,7 @@ const createInterpreter = () => {
     Logical: (lft, operator, right) => {
       const left = evaluate(lft);
 
-      if (operator.type === TokenType.OR) { //??
+      if (operator.type === TokenType.OR) {
         if (isTruthy(left)) return left;
       } else {
         if (!isTruthy(left)) return left;
