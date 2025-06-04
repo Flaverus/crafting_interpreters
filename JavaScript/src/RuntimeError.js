@@ -1,3 +1,4 @@
+// Used class as I had no idea on how to deal with that differently...
 class RuntimeError extends Error {
   constructor(token, message) {
     super(message);

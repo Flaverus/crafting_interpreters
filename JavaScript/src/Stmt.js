@@ -1,3 +1,8 @@
+// Basically the same as Expr:
+// In JS we use factory functions that return plain objects instead of classes.
+// We send the values separately to the visitor. We could have created an object and then return this. But I decided to handle values separately. No particular reason.
+// nodeId was later added as well as we have no object reference for locals in Interpreter/Parser/Resolver
+
 export const Block = (statements) => ({
   type: "Block",
   statements,

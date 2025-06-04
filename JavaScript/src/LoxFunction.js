@@ -1,6 +1,7 @@
 import { createLoxCallable } from './LoxCallable.js';
 import createEnvironment from './Environment.js';
 
+//Another factory function with a leading "create".
 const createLoxFunction = (name, params, body, closure, isInitializer) => {
 
   const bind = (instance) => {
@@ -9,6 +10,7 @@ const createLoxFunction = (name, params, body, closure, isInitializer) => {
     return createLoxFunction(name, params, body, environment, isInitializer);
   }
 
+  //Same here as in LoxClass. Creating the Callable and returning its functionality instead of overriding Methods
   const callable = createLoxCallable(
     // arity function
     () => params.length,

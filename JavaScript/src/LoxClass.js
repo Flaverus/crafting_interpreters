@@ -1,6 +1,7 @@
 import { createLoxCallable } from './LoxCallable.js';
 import createLoxInstance from './LoxInstance.js';
 
+//Another factory function with a leading "create"
 const createLoxClass = (name, superclass, methods) => {
 
   const findMethod = (methodName) => {
@@ -15,6 +16,7 @@ const createLoxClass = (name, superclass, methods) => {
     return null;
   }
 
+  //Not overriding Method but creating and returning Callable functionality
   const loxCallable = createLoxCallable(
     // arity function
     () => {

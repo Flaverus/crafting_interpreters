@@ -1,3 +1,5 @@
+//Create somewhat an Enum
+
 const FunctionType = Object.freeze({
   NONE: 'NONE',
   FUNCTION: 'FUNCTION',

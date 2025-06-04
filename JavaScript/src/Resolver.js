@@ -2,6 +2,9 @@ import { error as loxError } from './Lox.js';
 import ClassType from './ClassType.js';
 import FunctionType from './FunctionType.js';
 
+// We use a factory function, again, with a leading "create".
+// Similar to the Interpreter we work with a resolver Object for the visitor
+
 const createResolver = (interpreter) => {
   const scopes = []; // Using array as a stack
   let currentFunction = FunctionType.NONE;

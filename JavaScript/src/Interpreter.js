@@ -7,7 +7,8 @@ import RuntimeError from './RuntimeError.js';
 import Return from './Return.js';
 import { runtimeError } from './Lox.js'
 
-// Interpreter factory function
+// Interpreter factory function with leading "create"
+// Mainly identical to Java implementation except the interpreter Object as visitor
 const createInterpreter = () => {
 
   const globals = createEnvironment();
@@ -66,7 +67,7 @@ const createInterpreter = () => {
           if (typeof leftValue === "string" && typeof rightValue === "string") {
             return leftValue + rightValue;  // Handle string concatenation
           }
-          // We differ here, even though it makes no difference for JS to implement this rule to Lox
+
           throw new RuntimeError(operator, "Operands must be two numbers or two strings.");
         case TokenType.SLASH:
           checkNumberOperands(operator, leftValue, rightValue);
@@ -94,7 +95,7 @@ const createInterpreter = () => {
         throw new RuntimeError(paren, `Expected ${callee.arity()} arguments but got ${argVals.length}.`);
       }
 
-      return callee.call(executeBlock, argVals); // Different as I can not send this..?
+      return callee.call(executeBlock, argVals);
     },
 
     Get: (obj, name) => {

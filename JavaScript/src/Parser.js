@@ -4,6 +4,7 @@ import TokenType from './TokenType.js';
 import { error as loxError } from './Lox.js';
 
 // Factory function that creates a parser instance with functional style. Again slight naming difference
+// Pretty similar to Java version
 const createParser = tokens => {
   let current = 0; // Pointer to current token
   let nextNodeId = 0; // For identifying and resolving local variables. Was chosen as I decided to return the values separately instead of an object in Expr and Stmt
@@ -117,7 +118,6 @@ const createParser = tokens => {
 
     let body = statement();
 
-    //
     if (increment !== null) {
       body = Block([
         body,
@@ -133,7 +133,6 @@ const createParser = tokens => {
     if (initializer !== null) {
       body = Block([initializer, body]);
     }
-    //
 
     return body;
   };
@@ -160,6 +159,7 @@ const createParser = tokens => {
     return Print(value);
   };
 
+  // returnStatement --> "return" expression? ";" ;
   const returnStatement = () => {
     const keyword = previous();
     let value = null;

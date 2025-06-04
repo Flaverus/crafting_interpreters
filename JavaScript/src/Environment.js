@@ -1,5 +1,6 @@
 import RuntimeError from './RuntimeError.js';
 
+// Again factory function instead of class with leading "create" in naming
 const createEnvironment = (enclosing = null) => {
   const values = new Map();
 
@@ -50,6 +51,7 @@ const createEnvironment = (enclosing = null) => {
     ancestor(distance).values.set(name.lexeme, value);
   };
 
+  // Saving return object in const to be able to use it in ancestor as environment
   const thisEnv = {
     enclosing,
     values,

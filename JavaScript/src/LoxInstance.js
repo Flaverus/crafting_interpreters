@@ -1,5 +1,7 @@
 import RuntimeError from './RuntimeError.js';
 
+//Repeatedly working with a factory function and "create".
+//Also getting the findMethod function as argument instead of getting class as we worked with values
 const createLoxInstance = (name, findMethod) => {
   const fields = new Map();
   const instance = {

@@ -1,3 +1,5 @@
+//Create somewhat an Enum
+
 const ClassType = Object.freeze({
   NONE: 'NONE',
   CLASS: 'CLASS',
